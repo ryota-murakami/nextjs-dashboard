@@ -1,5 +1,5 @@
-import { CheckIcon, ClockIcon } from '@heroicons/react/24/outline';
-import clsx from 'clsx';
+import { CheckIcon, ClockIcon } from '@heroicons/react/24/outline'
+import clsx from 'clsx'
 
 export default function InvoiceStatus({ status }: { status: string }) {
   return (
@@ -25,5 +25,5 @@ export default function InvoiceStatus({ status }: { status: string }) {
         </>
       ) : null}
     </span>
-  );
+  )
 }

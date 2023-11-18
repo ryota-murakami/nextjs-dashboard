@@ -3,9 +3,12 @@
   "scripts": {
     "build": "next build",
     "dev": "next dev",
-    "prettier": "prettier --write --ignore-unknown .",
+    "prettier": "prettier --ignore-unknown --write .",
     "prettier:check": "prettier --check --ignore-unknown .",
-    "start": "next start"
+    "start": "next start",
+    "lint": "eslint . --ext .ts,.tsx,.js,jsx,cjs,mjs",
+    "lint:fix": "eslint . --ext .ts,.tsx,.js,jsx,cjs,mjs --fix",
+    "prepare": "husky install"
   },
   "dependencies": {
     "@heroicons/react": "^2.0.18",
@@ -20,22 +23,33 @@
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "tailwindcss": "3.3.3",
-    "typescript": "5.2.2",
     "zod": "^3.22.2"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.1",
     "@types/react": "18.2.21",
     "@types/react-dom": "18.2.14",
+    "@typescript-eslint/eslint-plugin": "^6.11.0",
+    "@typescript-eslint/parser": "^6.11.0",
     "@vercel/style-guide": "^5.0.1",
     "dotenv": "^16.3.1",
-    "eslint": "^8.52.0",
+    "eslint": "^8.54.0",
     "eslint-config-next": "^14.0.0",
     "eslint-config-prettier": "9.0.0",
-    "prettier": "^3.0.3",
-    "prettier-plugin-tailwindcss": "0.5.4"
+    "eslint-config-ts-prefixer": "^1.12.5",
+    "eslint-import-resolver-typescript": "^3.6.1",
+    "eslint-plugin-import": "^2.29.0",
+    "eslint-plugin-prettier": "^5.0.1",
+    "husky": "^8.0.0",
+    "lint-staged": "^15.1.0",
+    "prettier": "^3.1.0",
+    "prettier-plugin-tailwindcss": "0.5.4",
+    "typescript": "5.2.2"
   },
   "engines": {
     "node": ">=18.17.0"
+  },
+  "lint-staged": {
+    "*": "prettier --ignore-unknown --write"
   }
 }
