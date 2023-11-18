@@ -2,7 +2,7 @@
   "private": true,
   "scripts": {
     "build": "next build",
-    "dev": "next dev --turbo",
+    "dev": "next dev",
     "prettier": "prettier --ignore-unknown --write .",
     "prettier:check": "prettier --check --ignore-unknown .",
     "start": "next start",
@@ -45,6 +45,7 @@
     "husky": "^8.0.0",
     "lint-staged": "^15.1.0",
     "prettier": "^3.1.0",
+    "node-gyp-build": "4.6.1",
     "prettier-plugin-tailwindcss": "0.5.4",
     "typescript": "5.2.2"
   },
