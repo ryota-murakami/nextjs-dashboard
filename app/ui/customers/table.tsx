@@ -1,12 +1,13 @@
 import Image from 'next/image'
 
-import type { FormattedCustomersTable } from '@/app/lib/definitions'
-import { CustomersTable } from '@/app/lib/definitions'
+import type {
+  FormattedCustomersTable,
+  CustomersTable,
+} from '@/app/lib/definitions'
+import { lusitana } from '@/app/ui/fonts'
 import Search from '@/app/ui/search'
 
-import { lusitana } from '@/app/ui/fonts'
-
-export default async function CustomersTable({
+export default async function CustomersTableComponent({
   customers,
 }: {
   customers: FormattedCustomersTable[]
