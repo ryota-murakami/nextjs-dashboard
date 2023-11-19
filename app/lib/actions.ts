@@ -1,4 +1,10 @@
 'use server'
+
+import { sql } from '@vercel/postgres'
+import { revalidatePath } from 'next/cache'
+import { redirect } from 'next/navigation'
+import { z } from 'zod'
+
 import { signIn } from '@/auth'
 
 export type State = {
@@ -9,12 +15,6 @@ export type State = {
   }
   message?: string | null
 }
-
-import { sql } from '@vercel/postgres'
-import { revalidatePath } from 'next/cache'
-import { redirect } from 'next/navigation'
-import { z } from 'zod'
-
 export async function authenticate(
   prevState: string | undefined,
   formData: FormData,
@@ -120,7 +120,6 @@ export async function updateInvoice(
 }
 
 export async function deleteInvoice(id: string) {
-  throw new Error('Failed to Delete Invoice')
   try {
     await sql`DELETE FROM invoices WHERE id = ${id}`
     revalidatePath('/dashboard/invoices')
