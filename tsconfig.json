@@ -34,5 +34,5 @@
     "app/lib/placeholder-data.js",
     "scripts/seed.js"
   ],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", ".next"]
 }
