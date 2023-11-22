@@ -1,5 +1,7 @@
 ## Next.js App Router Course - Starter
 
+URL: https://nextjs-dashboard-eosin-nine.vercel.app
+
 ### Email: user@nextmail.com
 ### Password: 123456
 
