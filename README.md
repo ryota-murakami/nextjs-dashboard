@@ -2,7 +2,8 @@
 
 URL: https://nextjs-dashboard-eosin-nine.vercel.app
 
-### Email: user@nextmail.com
+### Email:
+
 ### Password: 123456
 
 This is the starter template for the Next.js App Router Course. It contains the starting code for the dashboard application.
