@@ -1,8 +1,5 @@
 import '@/app/ui/global.css'
 import type { Metadata } from 'next'
-
-import { inter } from '@/app/ui/fonts'
-
 export const metadata: Metadata = {
   title: {
     template: '%s | Acme Dashboard',
@@ -18,7 +15,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${inter.className} antialiased`}>{children}</body>
+      <body className="font-sans antialiased">{children}</body>
     </html>
   )
 }
