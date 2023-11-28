@@ -1,5 +1,8 @@
 {
   "private": true,
+  "lint-staged": {
+    "*": "prettier --ignore-unknown --write"
+  },
   "scripts": {
     "build": "next build",
     "dev": "next dev",
@@ -53,8 +56,5 @@
   },
   "engines": {
     "node": ">=18.17.0"
-  },
-  "lint-staged": {
-    "*": "prettier --ignore-unknown --write"
   }
 }
