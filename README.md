@@ -2,7 +2,7 @@
 
 URL: https://nextjs-dashboard-eosin-nine.vercel.app
 
-### Email:
+### Email: user@nextmail.com
 
 ### Password: 123456
 
