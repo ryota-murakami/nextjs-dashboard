@@ -1,4 +1,5 @@
 import type { Config } from 'tailwindcss'
+import defaultTheme from 'tailwindcss/defaultTheme'
 
 const config: Config = {
   content: [
@@ -25,6 +26,7 @@ const config: Config = {
           transform: 'translateX(100%)',
         },
       },
+      ...defaultTheme.keyframes,
     },
   },
   plugins: [require('@tailwindcss/forms')],
