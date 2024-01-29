@@ -1,0 +1,7 @@
+.idea
+.next
+.vscode
+.build
+.node_modules
+tsconfig.tsbuildinfo
+pnpm-lock.yaml
