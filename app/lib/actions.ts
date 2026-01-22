@@ -32,13 +32,13 @@ export async function authenticate(
 const FormSchema = z.object({
   id: z.string(),
   customerId: z.string({
-    invalid_type_error: 'Please select a customer.',
+    error: 'Please select a customer.',
   }),
   amount: z.coerce
     .number()
-    .gt(0, { message: 'Please enter an amount greater than $0.' }),
+    .gt(0, { error: 'Please enter an amount greater than $0.' }),
   status: z.enum(['pending', 'paid'], {
-    invalid_type_error: 'Please select an invoice status.',
+    error: 'Please select an invoice status.',
   }),
   date: z.string(),
 })
@@ -119,12 +119,11 @@ export async function updateInvoice(
   redirect('/dashboard/invoices')
 }
 
-export async function deleteInvoice(id: string) {
+export async function deleteInvoice(id: string): Promise<void> {
   try {
     await sql`DELETE FROM invoices WHERE id = ${id}`
     revalidatePath('/dashboard/invoices')
-    return { message: 'Deleted Invoice.' }
   } catch (error) {
-    return { message: 'Database Error: Failed to Delete Invoice.' }
+    console.error('Database Error: Failed to Delete Invoice.', error)
   }
 }

@@ -11,14 +11,14 @@ import { InvoicesTableSkeleton } from '@/app/ui/skeletons'
 export const metadata: Metadata = {
   title: 'Invoices',
 }
-export default async function Page({
-  searchParams,
-}: {
-  searchParams?: {
-    query?: string
-    page?: string
-  }
-}) {
+
+type SearchParams = Promise<{
+  query?: string
+  page?: string
+}>
+
+export default async function Page(props: { searchParams: SearchParams }) {
+  const searchParams = await props.searchParams
   const query = searchParams?.query || ''
   const currentPage = Number(searchParams?.page) || 1
 
