@@ -1,17 +1,26 @@
-import { sql } from '@vercel/postgres'
 import bcrypt from 'bcrypt'
+import { eq } from 'drizzle-orm'
 import NextAuth from 'next-auth'
 import Credentials from 'next-auth/providers/credentials'
 import { z } from 'zod'
 
-import type { User } from '@/app/lib/definitions'
+import { db, users, type User } from '@/db'
 
 import { authConfig } from './auth.config'
 
+/**
+ * Fetches a user by email for authentication.
+ * @param email - User email address
+ * @returns User record or undefined if not found
+ */
 async function getUser(email: string): Promise<User | undefined> {
   try {
-    const user = await sql<User>`SELECT * FROM users WHERE email=${email}`
-    return user.rows[0]
+    const result = await db
+      .select()
+      .from(users)
+      .where(eq(users.email, email))
+      .limit(1)
+    return result[0]
   } catch (error) {
     console.error('Failed to fetch user:', error)
     throw new Error('Failed to fetch user.')

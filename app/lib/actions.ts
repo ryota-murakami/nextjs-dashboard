@@ -1,11 +1,12 @@
 'use server'
 
-import { sql } from '@vercel/postgres'
+import { eq } from 'drizzle-orm'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
 
 import { signIn } from '@/auth'
+import { db, invoices } from '@/db'
 
 export type State = {
   errors?: {
@@ -15,6 +16,13 @@ export type State = {
   }
   message?: string | null
 }
+
+/**
+ * Authenticates user with credentials.
+ * @param prevState - Previous state from useFormState
+ * @param formData - Form data containing email and password
+ * @returns Error message string if authentication fails
+ */
 export async function authenticate(
   prevState: string | undefined,
   formData: FormData,
@@ -45,6 +53,12 @@ const FormSchema = z.object({
 
 const CreateInvoice = FormSchema.omit({ id: true, date: true })
 
+/**
+ * Creates a new invoice.
+ * @param prevState - Previous state from useFormState
+ * @param formData - Form data containing customerId, amount, and status
+ * @returns Validation errors or redirects on success
+ */
 export async function createInvoice(prevState: State, formData: FormData) {
   const validatedFields = CreateInvoice.safeParse({
     customerId: formData.get('customerId'),
@@ -52,7 +66,6 @@ export async function createInvoice(prevState: State, formData: FormData) {
     status: formData.get('status'),
   })
 
-  // If form validation fails, return errors early. Otherwise, continue.
   if (!validatedFields.success) {
     return {
       errors: validatedFields.error.flatten().fieldErrors,
@@ -60,30 +73,36 @@ export async function createInvoice(prevState: State, formData: FormData) {
     }
   }
 
-  // Prepare data for insertion into the database
   const { customerId, amount, status } = validatedFields.data
   const amountInCents = amount * 100
   const date = new Date().toISOString().split('T')[0]
 
-  // Insert data into the database
   try {
-    await sql`
-      INSERT INTO invoices (customer_id, amount, status, date)
-      VALUES (${customerId}, ${amountInCents}, ${status}, ${date})
-    `
+    await db.insert(invoices).values({
+      customerId,
+      amount: amountInCents,
+      status,
+      date,
+    })
   } catch (error) {
-    // If a database error occurs, return a more specific error.
     return {
       message: 'Database Error: Failed to Create Invoice.',
     }
   }
 
-  // Revalidate the cache for the invoices page and redirect the user.
   revalidatePath('/dashboard/invoices')
   redirect('/dashboard/invoices')
 }
 
 const UpdateInvoice = FormSchema.omit({ id: true, date: true })
+
+/**
+ * Updates an existing invoice.
+ * @param id - Invoice UUID to update
+ * @param prevState - Previous state from useFormState
+ * @param formData - Form data containing customerId, amount, and status
+ * @returns Validation errors or redirects on success
+ */
 export async function updateInvoice(
   id: string,
   prevState: State,
@@ -106,11 +125,14 @@ export async function updateInvoice(
   const amountInCents = amount * 100
 
   try {
-    await sql`
-      UPDATE invoices
-      SET customer_id = ${customerId}, amount = ${amountInCents}, status = ${status}
-      WHERE id = ${id}
-    `
+    await db
+      .update(invoices)
+      .set({
+        customerId,
+        amount: amountInCents,
+        status,
+      })
+      .where(eq(invoices.id, id))
   } catch (error) {
     return { message: 'Database Error: Failed to Update Invoice.' }
   }
@@ -119,9 +141,13 @@ export async function updateInvoice(
   redirect('/dashboard/invoices')
 }
 
+/**
+ * Deletes an invoice by ID.
+ * @param id - Invoice UUID to delete
+ */
 export async function deleteInvoice(id: string): Promise<void> {
   try {
-    await sql`DELETE FROM invoices WHERE id = ${id}`
+    await db.delete(invoices).where(eq(invoices.id, id))
     revalidatePath('/dashboard/invoices')
   } catch (error) {
     console.error('Database Error: Failed to Delete Invoice.', error)
