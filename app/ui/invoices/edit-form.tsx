@@ -7,7 +7,7 @@ import {
   UserCircleIcon,
 } from '@heroicons/react/24/outline'
 import Link from 'next/link'
-import { useFormState } from 'react-dom'
+import { useActionState } from 'react'
 
 import { updateInvoice } from '@/app/lib/actions'
 import type { CustomerField, InvoiceForm } from '@/app/lib/definitions'
@@ -22,7 +22,7 @@ export default function EditInvoiceForm({
 }) {
   const initialState = { message: '', errors: {} }
   const updateInvoiceWithId = updateInvoice.bind(null, invoice.id)
-  const [state, dispatch] = useFormState(updateInvoiceWithId, initialState)
+  const [state, dispatch] = useActionState(updateInvoiceWithId, initialState)
   return (
     <form action={dispatch}>
       <input type="hidden" name="id" value={invoice.id} />

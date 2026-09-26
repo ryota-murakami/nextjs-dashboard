@@ -7,7 +7,7 @@ import {
   UserCircleIcon,
 } from '@heroicons/react/24/outline'
 import Link from 'next/link'
-import { useFormState } from 'react-dom'
+import { useActionState } from 'react'
 
 import { createInvoice } from '@/app/lib/actions'
 import type { CustomerField } from '@/app/lib/definitions'
@@ -15,7 +15,7 @@ import { Button } from '@/app/ui/button'
 
 export default function Form({ customers }: { customers: CustomerField[] }) {
   const initialState = { message: '', errors: {} }
-  const [state, dispatch] = useFormState(createInvoice, initialState)
+  const [state, dispatch] = useActionState(createInvoice, initialState)
 
   return (
     <form action={dispatch}>

@@ -6,14 +6,19 @@ import {
   KeyIcon,
   ExclamationCircleIcon,
 } from '@heroicons/react/24/outline'
-import { useFormState, useFormStatus } from 'react-dom'
+import { useSearchParams } from 'next/navigation'
+import { useActionState } from 'react'
+import { useFormStatus } from 'react-dom'
 
 import { authenticate } from '@/app/lib/actions'
 
 import { Button } from './button'
 
 export default function LoginForm() {
-  const [state, dispatch] = useFormState(authenticate, undefined)
+  const searchParams = useSearchParams()
+  // Return to the page the proxy bounced the user from; without this NextAuth redirects back to /login
+  const callbackUrl = searchParams.get('callbackUrl') || '/dashboard'
+  const [state, dispatch] = useActionState(authenticate, undefined)
   return (
     <form action={dispatch} className="space-y-3">
       <div className="flex-1 rounded-lg bg-gray-50 px-6 pb-4 pt-8">
@@ -59,6 +64,7 @@ export default function LoginForm() {
             </div>
           </div>
         </div>
+        <input type="hidden" name="redirectTo" value={callbackUrl} />
         <LoginButton />
         <div
           className="flex h-8 items-end space-x-1"

@@ -1,6 +1,7 @@
 'use server'
 
 import { eq } from 'drizzle-orm'
+import { AuthError } from 'next-auth'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
@@ -19,7 +20,7 @@ export type State = {
 
 /**
  * Authenticates user with credentials.
- * @param prevState - Previous state from useFormState
+ * @param prevState - Previous state from useActionState
  * @param formData - Form data containing email and password
  * @returns Error message string if authentication fails
  */
@@ -30,9 +31,11 @@ export async function authenticate(
   try {
     await signIn('credentials', Object.fromEntries(formData))
   } catch (error) {
-    if ((error as Error).message.includes('CredentialsSignin')) {
+    // Auth.js error messages are lowercased URLs, so match on the error type instead
+    if (error instanceof AuthError && error.type === 'CredentialsSignin') {
       return 'CredentialsSignin'
     }
+    // Re-throw everything else, including the NEXT_REDIRECT that signIn uses on success
     throw error
   }
 }
@@ -55,7 +58,7 @@ const CreateInvoice = FormSchema.omit({ id: true, date: true })
 
 /**
  * Creates a new invoice.
- * @param prevState - Previous state from useFormState
+ * @param prevState - Previous state from useActionState
  * @param formData - Form data containing customerId, amount, and status
  * @returns Validation errors or redirects on success
  */
@@ -99,7 +102,7 @@ const UpdateInvoice = FormSchema.omit({ id: true, date: true })
 /**
  * Updates an existing invoice.
  * @param id - Invoice UUID to update
- * @param prevState - Previous state from useFormState
+ * @param prevState - Previous state from useActionState
  * @param formData - Form data containing customerId, amount, and status
  * @returns Validation errors or redirects on success
  */

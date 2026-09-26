@@ -1,3 +1,5 @@
+import { Suspense } from 'react'
+
 import AcmeLogo from '@/app/ui/acme-logo'
 import LoginForm from '@/app/ui/login-form'
 
@@ -10,7 +12,10 @@ export default function LoginPage() {
             <AcmeLogo />
           </div>
         </div>
-        <LoginForm />
+        {/* useSearchParams in LoginForm requires a Suspense boundary for static rendering */}
+        <Suspense>
+          <LoginForm />
+        </Suspense>
       </div>
     </main>
   )
