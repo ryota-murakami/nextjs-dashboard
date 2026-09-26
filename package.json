@@ -5,9 +5,9 @@
   },
   "scripts": {
     "build": "next build",
-    "dev": "next dev --turbo",
+    "dev": "next dev --turbo -p 3165",
     "prettier": "prettier --ignore-unknown --write .",
-    "start": "next start",
+    "start": "next start -p 3165",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc --noEmit",
