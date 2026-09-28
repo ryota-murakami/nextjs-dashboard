@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 
-import { formatCurrency } from './utils'
+import { formatCurrency, generatePagination } from './utils'
 
 describe('invoice currency formatting', () => {
   test('formats cents as a US dollar amount', () => {
@@ -23,5 +23,55 @@ describe('invoice currency formatting', () => {
 
     // Assert
     expect(formattedAmount).toBe('$0.00')
+  })
+})
+
+describe('invoice pagination', () => {
+  test('shows every page when the result fits without an ellipsis', () => {
+    // Arrange
+    const currentPage = 3
+    const totalPages = 7
+
+    // Act
+    const pages = generatePagination(currentPage, totalPages)
+
+    // Assert
+    expect(pages).toEqual([1, 2, 3, 4, 5, 6, 7])
+  })
+
+  test('keeps the first pages and final two pages visible near the beginning', () => {
+    // Arrange
+    const currentPage = 2
+    const totalPages = 12
+
+    // Act
+    const pages = generatePagination(currentPage, totalPages)
+
+    // Assert
+    expect(pages).toEqual([1, 2, 3, '...', 11, 12])
+  })
+
+  test('shows neighboring pages around a middle selection', () => {
+    // Arrange
+    const currentPage = 6
+    const totalPages = 12
+
+    // Act
+    const pages = generatePagination(currentPage, totalPages)
+
+    // Assert
+    expect(pages).toEqual([1, '...', 5, 6, 7, '...', 12])
+  })
+
+  test('keeps the first two pages and final pages visible near the end', () => {
+    // Arrange
+    const currentPage = 11
+    const totalPages = 12
+
+    // Act
+    const pages = generatePagination(currentPage, totalPages)
+
+    // Assert
+    expect(pages).toEqual([1, 2, '...', 10, 11, 12])
   })
 })
