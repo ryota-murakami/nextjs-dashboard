@@ -140,6 +140,42 @@ describe('invoice data queries', () => {
     expect(invoices.date).toBe('invoice-date')
   })
 
+  test.each([
+    { page: 1, offset: 0 },
+    { page: 2, offset: 6 },
+  ])(
+    'shows the correct invoice slice on page $page without changing row values',
+    async ({ page, offset }) => {
+      // Arrange
+      const invoiceRows: InvoiceRow[] = [
+        {
+          id: 'invoice-page-boundary',
+          amount: 4200,
+          date: '2026-09-28',
+          status: 'paid',
+          name: 'Grace Hopper',
+          email: 'grace@example.com',
+          image_url: '/customers/grace.png',
+        },
+      ]
+      const query = createSelectQuery(invoiceRows)
+
+      // Act
+      const result = await fetchFilteredInvoices('Grace', page)
+
+      // Assert
+      expect(query.limit).toHaveBeenCalledWith(6)
+      expect(query.offset).toHaveBeenCalledWith(offset)
+      expect(result).toEqual([
+        {
+          ...invoiceRows[0],
+          customer_id: '',
+          status: 'paid',
+        },
+      ])
+    },
+  )
+
   test('returns zero pages when no filtered invoices are found', async () => {
     // Arrange
     const query = createSelectQuery([])
