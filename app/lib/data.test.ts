@@ -8,6 +8,7 @@ import {
   fetchInvoicesPages,
   fetchInvoiceById,
   fetchFilteredCustomers,
+  getUser,
 } from './data'
 
 vi.mock('@/db', () => ({
@@ -27,7 +28,7 @@ vi.mock('@/db', () => ({
     status: 'invoice-status',
   },
   revenue: {},
-  users: {},
+  users: { email: 'user-email' },
 }))
 
 vi.mock('next/cache', () => ({ unstable_noStore: vi.fn() }))
@@ -197,6 +198,26 @@ describe('invoice data queries', () => {
     expect(totalPages).toBe(0)
   })
 
+  test.each([
+    { invoiceCount: 6, expectedPages: 1 },
+    { invoiceCount: 7, expectedPages: 2 },
+    { invoiceCount: 13, expectedPages: 3 },
+  ])(
+    'shows $expectedPages pages for $invoiceCount matching invoices',
+    async ({ invoiceCount, expectedPages }) => {
+      // Arrange
+      const query = createSelectQuery([])
+      query.where.mockResolvedValue([{ count: invoiceCount }])
+
+      // Act
+      const totalPages = await fetchInvoicesPages('paid')
+
+      // Assert
+      expect(totalPages).toBe(expectedPages)
+      expect(query.where).toHaveBeenCalledOnce()
+    },
+  )
+
   test('converts stored invoice cents to dollars for the edit form', async () => {
     // Arrange
     const query = createSelectQuery([
@@ -350,5 +371,25 @@ describe('invoice data queries', () => {
     await expect(attempt).rejects.toThrow('Failed to fetch invoices.')
     expect(consoleError).toHaveBeenCalledWith('Database Error:', databaseError)
     consoleError.mockRestore()
+  })
+
+  test('finds only the first user matching the sign-in email', async () => {
+    // Arrange
+    const user = {
+      id: 'user-123',
+      name: 'Ada Lovelace',
+      email: 'ada@example.com',
+      password: 'hashed-password',
+    }
+    const query = createSelectQuery([])
+    query.limit.mockResolvedValue([user])
+
+    // Act
+    const result = await getUser('ada@example.com')
+
+    // Assert
+    expect(query.where).toHaveBeenCalledWith('equal:user-email:ada@example.com')
+    expect(query.limit).toHaveBeenCalledWith(1)
+    expect(result).toEqual(user)
   })
 })

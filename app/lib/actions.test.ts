@@ -163,6 +163,29 @@ describe('invoice server actions', () => {
     expect(redirect).toHaveBeenCalledWith('/dashboard/invoices')
   })
 
+  test('rejects invalid invoice updates without writing or redirecting', async () => {
+    // Arrange
+    const formData = new FormData()
+    formData.set('customerId', 'customer-456')
+    formData.set('amount', '-1')
+    formData.set('status', 'refunded')
+
+    // Act
+    const result = await updateInvoice('invoice-123', {}, formData)
+
+    // Assert
+    expect(result).toEqual({
+      errors: {
+        amount: ['Please enter an amount greater than $0.'],
+        status: ['Please select an invoice status.'],
+      },
+      message: 'Missing Fields. Failed to Update Invoice.',
+    })
+    expect(db.update).not.toHaveBeenCalled()
+    expect(revalidatePath).not.toHaveBeenCalled()
+    expect(redirect).not.toHaveBeenCalled()
+  })
+
   test('deletes an invoice and refreshes the invoice list', async () => {
     // Arrange
     const where = vi.fn().mockResolvedValue(undefined)
