@@ -2,9 +2,12 @@ import { beforeEach, describe, expect, test, vi } from 'vitest'
 
 import { db, customers, invoices } from '@/db'
 import {
+  fetchCardData,
   fetchFilteredInvoices,
+  fetchLatestInvoices,
   fetchInvoicesPages,
   fetchInvoiceById,
+  fetchFilteredCustomers,
 } from './data'
 
 vi.mock('@/db', () => ({
@@ -23,6 +26,8 @@ vi.mock('@/db', () => ({
     id: 'invoice-id',
     status: 'invoice-status',
   },
+  revenue: {},
+  users: {},
 }))
 
 vi.mock('next/cache', () => ({ unstable_noStore: vi.fn() }))
@@ -53,6 +58,8 @@ type SelectQuery = {
   orderBy: ReturnType<typeof vi.fn>
   limit: ReturnType<typeof vi.fn>
   offset: ReturnType<typeof vi.fn>
+  leftJoin: ReturnType<typeof vi.fn>
+  groupBy: ReturnType<typeof vi.fn>
 }
 
 function createSelectQuery(result: unknown[]): SelectQuery {
@@ -63,6 +70,8 @@ function createSelectQuery(result: unknown[]): SelectQuery {
     orderBy: vi.fn(),
     limit: vi.fn(),
     offset: vi.fn(),
+    leftJoin: vi.fn(),
+    groupBy: vi.fn(),
   }
 
   for (const method of [
@@ -72,10 +81,14 @@ function createSelectQuery(result: unknown[]): SelectQuery {
     query.orderBy,
     query.limit,
     query.offset,
+    query.leftJoin,
+    query.groupBy,
   ]) {
     method.mockReturnValue(query)
   }
   query.offset.mockImplementation(() => Promise.resolve(result))
+  query.limit.mockImplementation(() => query)
+  query.groupBy.mockImplementation(() => query)
 
   vi.mocked(db.select).mockReturnValue(query as never)
   return query
@@ -191,6 +204,100 @@ describe('invoice data queries', () => {
 
     // Assert
     expect(result).toBeUndefined()
+  })
+
+  test('limits latest invoices to five and formats stored cents for display', async () => {
+    // Arrange
+    const latestRows = [
+      {
+        id: 'invoice-latest',
+        amount: 12345,
+        name: 'Grace Hopper',
+        image_url: '/customers/grace.png',
+        email: 'grace@example.com',
+      },
+    ]
+    const query = createSelectQuery(latestRows)
+    query.limit.mockImplementation(() => Promise.resolve(latestRows))
+
+    // Act
+    const result = await fetchLatestInvoices()
+
+    // Assert
+    expect(query.limit).toHaveBeenCalledWith(5)
+    expect(result).toEqual([
+      {
+        ...latestRows[0],
+        amount: '$123.45',
+      },
+    ])
+  })
+
+  test('formats missing card aggregates as zero without failing the dashboard', async () => {
+    // Arrange
+    const invoiceCountQuery = createSelectQuery([])
+    const customerCountQuery = createSelectQuery([])
+    const totalsQuery = createSelectQuery([])
+    vi.mocked(db.select)
+      .mockReturnValueOnce(invoiceCountQuery as never)
+      .mockReturnValueOnce(customerCountQuery as never)
+      .mockReturnValueOnce(totalsQuery as never)
+
+    // Act
+    const result = await fetchCardData()
+
+    // Assert
+    expect(result).toEqual({
+      numberOfCustomers: 0,
+      numberOfInvoices: 0,
+      totalPaidInvoices: '$0.00',
+      totalPendingInvoices: '$0.00',
+    })
+  })
+
+  test('formats customer invoice totals while preserving customers with no invoices', async () => {
+    // Arrange
+    const customersWithTotals = [
+      {
+        id: 'customer-123',
+        name: 'Katherine Johnson',
+        email: 'katherine@example.com',
+        image_url: '/customers/katherine.png',
+        total_invoices: 2,
+        total_pending: 0,
+        total_paid: 2450,
+      },
+      {
+        id: 'customer-456',
+        name: 'Dorothy Vaughan',
+        email: 'dorothy@example.com',
+        image_url: '/customers/dorothy.png',
+        total_invoices: 0,
+        total_pending: null,
+        total_paid: null,
+      },
+    ]
+    const query = createSelectQuery(customersWithTotals)
+    query.orderBy.mockImplementation(() => Promise.resolve(customersWithTotals))
+
+    // Act
+    const result = await fetchFilteredCustomers('')
+
+    // Assert
+    expect(query.leftJoin).toHaveBeenCalled()
+    expect(query.groupBy).toHaveBeenCalled()
+    expect(result).toEqual([
+      {
+        ...customersWithTotals[0],
+        total_pending: '$0.00',
+        total_paid: '$24.50',
+      },
+      {
+        ...customersWithTotals[1],
+        total_pending: '$0.00',
+        total_paid: '$0.00',
+      },
+    ])
   })
 
   test('reports the filtered invoice query failure without exposing database details', async () => {
