@@ -64,7 +64,7 @@
     "pg": "^8.23.1",
     "prettier": "^3.10.1",
     "prettier-plugin-tailwindcss": "0.8.1",
-    "typescript": "7.0.2",
+    "typescript": "6.0.3",
     "typescript-eslint": "^8.74.0",
     "vitest": "^5.1.1",
     "yargs": "^18.2.0"
